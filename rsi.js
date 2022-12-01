@@ -1,6 +1,6 @@
 'use strict'
 
-class RSI {
+export default class RSI {
 	
   calculate(values, period, callback) {
     this.values = values.reverse();
@@ -83,30 +83,5 @@ class RSI {
   };
 }
 
-const data = [
-  46.21,
-  46.68,
-  46.76,
-  47.21,
-  48.08,
-  47.61,
-  47.57,
-  48.2,
-  49.23,
-  49.25,
-  47.54,
-  47.69,
-  46.83,
-  46.03,
-  46.08,
-  46.23,
-  46.5,
-  46.26,
-  45.15
-];
+//module.exports = { RSI }
 
-const rsi = new RSI();
-
-const wait = (ms)=> new Promise((resolve,reject)=>setTimeout(resolve,ms))
-(await wait(5000))()
-rsi.calculate(data, 14, (err, data) => console.log(data))
