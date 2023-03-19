@@ -6,33 +6,23 @@ export default class RSI {
     this.values = values.reverse();
     this.data = [];
     this.period = period;
-    return rsi.lossOrGain()
-      .then(() => rsi.getAverages('gain'))
-      .then(() => rsi.getAverages('loss'))
-      .then(() => rsi.calculateRS())
-      .then(() => rsi.calculateRSI())
+    return this.lossOrGain()
+      .then(() => this.getAverages('gain'))
+      .then(() => this.getAverages('loss'))
+      .then(() => this.calculateRS())
+      .then(() => this.calculateRSI())
       .then(result => callback(null, result))
   }
 
   async lossOrGain() {
     this.values.forEach((val, idx) => {
-      if (idx > 0) {
-        const prevVal = this.values[idx - 1];
-        const change = this.toFixed((val - prevVal), 2);
+        const change = this.toFixed((val.close - val.open), 2);
         this.data.push({
-          value: val,
+          value: val.close,
           change: change,
           gain: (change > 0) ? change : 0,
           loss: (change < 0) ? Math.abs(change) : 0
         });
-      } else {
-        this.data.push({
-          value: val,
-          gain: 0,
-          loss: 0,
-          change: 0
-        })
-      }
     });
     return this.data
   }
@@ -82,6 +72,3 @@ export default class RSI {
     return Math.round(number * Math.pow(10, decimals)) / (Math.pow(10, decimals));
   };
 }
-
-//module.exports = { RSI }
-
