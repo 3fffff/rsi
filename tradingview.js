@@ -111,9 +111,9 @@ async function getCandles({ connection, symbols, amount, timeframe = 60 }) {
     let currentSymCandles = []
 
     const unsubscribe = connection.subscribe(event => {
-		console.log(event)
+      console.log(event)
       // received new candles
-       if (event.name === 'timescale_update') {
+      if (event.name === 'timescale_update') {
         let newCandles = event.params[1]['sds_1']['s']
         if (newCandles.length > batchSize) {
           // sometimes tradingview sends already received candles
@@ -170,18 +170,18 @@ async function getCandles({ connection, symbols, amount, timeframe = 60 }) {
         // all symbols loaded
         unsubscribe()
         resolve(allCandles)
-      } 
+      }
     })
 
     connection.send('chart_create_session', [chartSession, ''])
-	
-	connection.send("quote_create_session", [session])
-	connection.send("quote_set_fields",
-            [session, "ch", "chp", "current_session", "description", "local_description", "language", "exchange", "fractional", "is_tradable", "lp", "lp_time",
-             "minmov", "minmove2", "original_name", "pricescale", "pro_name", "short_name", "type", "update_mode", "volume", "currency_code", "rchp", "rtc"])
-	connection.send("quote_add_symbols", [session, symbol, {"flags": ['force_permission']}])
-	connection.send("quote_fast_symbols", [session, symbol])
-	
+
+    connection.send("quote_create_session", [session])
+    connection.send("quote_set_fields",
+      [session, "ch", "chp", "current_session", "description", "local_description", "language", "exchange", "fractional", "is_tradable", "lp", "lp_time",
+        "minmov", "minmove2", "original_name", "pricescale", "pro_name", "short_name", "type", "update_mode", "volume", "currency_code", "rchp", "rtc"])
+    connection.send("quote_add_symbols", [session, symbol, { "flags": ['force_permission'] }])
+    connection.send("quote_fast_symbols", [session, symbol])
+
     connection.send('resolve_symbol', [
       chartSession,
       `sds_sym_0`,
@@ -192,17 +192,31 @@ async function getCandles({ connection, symbols, amount, timeframe = 60 }) {
     ])
   })
 }
+async function wait(ms) {
+  return new Promise((resolve, reject) => { setTimeout(resolve, ms) });
+}
+var exit = false
+async function checkExit() {
+  process.on('SIGINT', function () {
+    console.log("Caught interrupt signal");
+    exit = true;
+  });
+  return exit
+}
 (async function () {
   const connection = await connect()
-  const candles = await getCandles({
-    connection,
-    symbols: ['BINANCE:BTCUSDTPERP'],
-    amount: 500,
-    timeframe: 1
-  })
-  
-  console.log(`Candles for BINANCE:BTCUSDTPERP:`, candles[0])
-  console.log(candles[0].length)
+  while (true) {
+    if (await checkExit()) break
+    const candles = await getCandles({
+      connection,
+      symbols: ['BINANCE:BTCUSDTPERP'],
+      amount: 500,
+      timeframe: 1
+    })
+    console.log(`Candles for BINANCE:BTCUSDTPERP:`, candles[0])
+    console.log(candles[0].length)
+    await wait(10000)
+  }
   await connection.close()
   const rsi = new RSI();
 
