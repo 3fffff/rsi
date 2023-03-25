@@ -1,5 +1,8 @@
 import WebSocket from 'ws';
+import Forecast from "nostradamus"
+import readline from 'readline'
 import RSI from './rsi.js'
+import candleStickChart from './candleStick.js'
 import { getShutDownSingnal } from './shutdown.js';
 
 function getRandom(min, max) {
@@ -194,6 +197,15 @@ async function getCandles({ connection, symbols, amount, timeframe = 60 }) {
     })
   })
 }
+const clearConsole = () => {
+  for (let i = 0; i < 40; i++) {
+    const blank = '\n'.repeat(process.stdout.rows)
+    console.log(blank)
+    readline.cursorTo(process.stdout, 0, 0)
+    readline.clearScreenDown(process.stdout)
+  }
+
+}
 (async function () {
   const rsi = new RSI();
   const connection = await connect()
@@ -201,14 +213,34 @@ async function getCandles({ connection, symbols, amount, timeframe = 60 }) {
     const candles = await getCandles({
       connection,
       symbols: ['BINANCE:BTCUSDTPERP'],
-      amount: 14,
-      timeframe: 1
+      amount: 40,
+      timeframe: 60
     })
     //console.log(`Candles for BINANCE:BTCUSDTPERP:`, candles[0])
     //console.log(candles[0].length)
-    rsi.calculate(candles[0], candles[0].length, (err, data) => console.log(data))
+    /*rsi.calculate(candles[0], candles[0].length, (err, data) => {
+     const  data1 = [
+        362, 385, 432, 341, 382, 409,
+        498, 387, 473, 513, 582, 474,
+        544, 582, 681, 557, 628, 707,
+        773, 592, 627, 725, 854, 661
+      ]
+        , alpha = 0.5  // overall smoothing component
+        , beta = 0.4   // trend smoothing component
+        , gamma = 0.6  // seasonal smoothing component
+        , period = 4   // # of observations per season
+        , m = 4        // # of future observations to forecast
+
+      const predictions = Forecast(data1, alpha, beta, gamma, period, m);
+      console.log(predictions)
+    })*/
+    const result = await rsi.calculate(candles[0], candles[0].length)
+    console.log(result)
+    //clearConsole()
+    console.clear()
+    candleStickChart(candles[0])
     await new Promise(resolve => setTimeout(resolve, 10000))
-    if(getShutDownSingnal())
+    if (getShutDownSingnal())
       break
   }
   await connection.close()
