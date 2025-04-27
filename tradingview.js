@@ -1,9 +1,6 @@
 import WebSocket from 'ws';
-import Forecast from "nostradamus"
 import readline from 'readline'
 import RSI from './rsi.js'
-import candleStickChart from './candleStick.js'
-import { getShutDownSingnal } from './shutdown.js';
 
 function getRandom(min, max) {
   return ~~(Math.random() * (max - min) + min);
@@ -236,12 +233,7 @@ const clearConsole = () => {
     })*/
     const result = await rsi.calculate(candles[0], candles[0].length)
     console.log(result)
-    //clearConsole()
-    console.clear()
-    candleStickChart(candles[0])
     await new Promise(resolve => setTimeout(resolve, 10000))
-    if (getShutDownSingnal())
-      break
   }
   await connection.close()
 

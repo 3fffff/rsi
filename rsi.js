@@ -1,8 +1,8 @@
 'use strict'
 
 export default class RSI {
-	
-  calculate(values, period, callback) {
+
+  calculate(values, period) {
     this.values = values.reverse();
     this.data = [];
     this.period = period;
@@ -11,18 +11,18 @@ export default class RSI {
       .then(() => this.getAverages('loss'))
       .then(() => this.calculateRS())
       .then(() => this.calculateRSI())
-      .then(result => callback(null, result))
+      .then(result => result)
   }
 
   async lossOrGain() {
     this.values.forEach((val, idx) => {
-        const change = this.toFixed((val.close - val.open), 2);
-        this.data.push({
-          value: val.close,
-          change: change,
-          gain: (change > 0) ? change : 0,
-          loss: (change < 0) ? Math.abs(change) : 0
-        });
+      const change = this.toFixed((val.close - val.open), 2);
+      this.data.push({
+        value: val.close,
+        change: change,
+        gain: (change > 0) ? change : 0,
+        loss: (change < 0) ? Math.abs(change) : 0
+      });
     });
     return this.data
   }
